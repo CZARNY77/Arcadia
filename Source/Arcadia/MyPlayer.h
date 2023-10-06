@@ -6,6 +6,13 @@
 #include "GameFramework/Character.h"
 #include "MyPlayer.generated.h"
 
+//enum potrzebne do zmieniania kierunku chodzenia
+enum TurnCamera {
+	left,
+	right,
+	enter
+};
+
 UCLASS()
 class ARCADIA_API AMyPlayer : public ACharacter
 {
@@ -17,20 +24,28 @@ class ARCADIA_API AMyPlayer : public ACharacter
 	class UCameraComponent* Camera;
 
 public:
-	// Sets default values for this character's properties
 	AMyPlayer();
+	class ACorner* Corner;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	//Zmienne okreœlaj¹ce kierunek gracza
+	TurnCamera turnCamera;
+	float X, Y, Yaw;
+	int directionTurnCamera;	// okreœla kierynek obrotu kamery
+	bool bTurnCamera;
+
+	void ChangeDirection();		// funkcja odpowiada za zmiane kierunku obracania kamery
+	void TurnCamera(float dt);	// funkcja obraca kamera
+
+	void ActionKeys();			// funckja z akcjami po klikniêciu
 private:
 	void Move(float val);
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };
