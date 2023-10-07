@@ -35,6 +35,7 @@ protected:
 	float X, Y, Yaw;
 	int directionTurnCamera;	// okreœla kierynek obrotu kamery
 	bool bTurnCamera;
+	bool bResetRotation;
 
 	void ChangeDirection();		// funkcja odpowiada za zmiane kierunku obracania kamery
 	void TurnCamera(float dt);	// funkcja obraca kamera
