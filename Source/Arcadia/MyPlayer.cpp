@@ -27,6 +27,9 @@ AMyPlayer::AMyPlayer()
 	Camera->bUsePawnControlRotation = false;
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
+	Barrel = CreateDefaultSubobject<USceneComponent>(TEXT("Barrel"));
+	Barrel->SetupAttachment(RootComponent);
+
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 
@@ -45,12 +48,7 @@ void AMyPlayer::ChangeDirection()
 {
 	//Do Yaw przpisuje lokalizacjê jaka ma otrzymac kamera, X i Y sa użyte do zmiany ruchu postaci, directionTurnCamera odpowiada w którym kierunku ma obróci sie kamera.
 	//Assigns a location to the Yaw variable that the camera should receive, X and Y are used to change the character's movement, directionTurnCamera is responsible for the direction of camera rotation
-	 
-	if (Corner->AxisX) Y = 1;
-	else Y = -1;
-	if (Corner->AxisY) X = 1;
-	else X = -1;
-
+	//zrobić lepiej, przekazywać z rogów dane
 	//Corner --
 	if ((!Corner->AxisX) && (!Corner->AxisY) && (Y == -1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw - 90.f;
@@ -124,6 +122,17 @@ void AMyPlayer::ActionKeys()
 	}
 }
 
+void AMyPlayer::Shot()
+{
+	if (Bullet && Barrel) {
+		FVector bulletDirection = this->GetActorForwardVector();
+		FVector SpawnLocation = Barrel->GetComponentLocation();
+		FRotator SpawnRotation = GetActorRotation();
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("B direction: %f %f %f"), bulletDirection.X, bulletDirection.Y, bulletDirection.Z));
+		ABullet* NewBullet = GetWorld()->SpawnActor<ABullet>(Bullet, SpawnLocation, SpawnRotation);
+	}
+}
+
 void AMyPlayer::TurnCamera(float dt)
 {
 	if (bTurnCamera) {
@@ -166,5 +175,6 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AMyPlayer::ActionKeys);
+	PlayerInputComponent->BindAction("Shot", IE_Pressed, this, &AMyPlayer::Shot);
 }
 

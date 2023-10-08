@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Bullet.h"
 #include "GameFramework/Character.h"
 #include "MyPlayer.generated.h"
 
@@ -22,7 +23,10 @@ class ARCADIA_API AMyPlayer : public ACharacter
 	class USpringArmComponent* SpringArm;
 	UPROPERTY(EditAnywhere, Category = "Camera Settings")
 	class UCameraComponent* Camera;
-
+	UPROPERTY(EditAnywhere, Category = "Shot Settings")
+	class USceneComponent* Barrel;
+	UPROPERTY(EditAnywhere, Category = "Shot Settings")
+	TSubclassOf<class ABullet> Bullet;
 public:
 	AMyPlayer();
 	class ACorner* Corner;
@@ -41,6 +45,7 @@ protected:
 	void TurnCamera(float dt);	// funkcja obraca kamera
 
 	void ActionKeys();			// funckja z akcjami po klikniêciu
+	void Shot();
 private:
 	void Move(float val);
 
