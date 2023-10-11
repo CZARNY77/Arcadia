@@ -28,7 +28,7 @@ AMyPlayer::AMyPlayer()
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
 	Barrel = CreateDefaultSubobject<USceneComponent>(TEXT("Barrel"));
-	Barrel->SetupAttachment(RootComponent);
+	Barrel->SetupAttachment(GetMesh());
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
@@ -36,6 +36,7 @@ AMyPlayer::AMyPlayer()
 	X = 0.f; Y = 1.f; Yaw = 0.f;
 	bTurnCamera = false;
 	bResetRotation = true;
+	
 }
 
 void AMyPlayer::BeginPlay()
@@ -124,12 +125,21 @@ void AMyPlayer::ActionKeys()
 
 void AMyPlayer::Shot()
 {
-	if (Bullet && Barrel) {
+	if (Bullet) {
+		FVector weaponLocation = GetMesh()->GetBoneLocation("weapon_l");
 		FVector bulletDirection = this->GetActorForwardVector();
+
+		int barrelDirection;
+		if(bulletDirection.Y != 0.f && Y != 0.f) barrelDirection = bulletDirection.Y >= 0.f ? 1 : -1;
+		if(bulletDirection.X != 0.f && X != 0.f) barrelDirection = bulletDirection.X >= 0.f ? 1 : -1;
+		Barrel->SetWorldLocation(weaponLocation + FVector(1.f, 40.f * barrelDirection, 13.f));
+		
 		FVector SpawnLocation = Barrel->GetComponentLocation();
 		FRotator SpawnRotation = GetActorRotation();
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("B direction: %f %f %f"), bulletDirection.X, bulletDirection.Y, bulletDirection.Z));
-		ABullet* NewBullet = GetWorld()->SpawnActor<ABullet>(Bullet, SpawnLocation, SpawnRotation);
+		
+		ABullet* newBullet = GetWorld()->SpawnActor<ABullet>(Bullet, SpawnLocation, SpawnRotation);
+		newBullet->SetBulletVelocity(bulletDirection);
 	}
 }
 
