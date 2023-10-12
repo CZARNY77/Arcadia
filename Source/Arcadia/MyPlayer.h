@@ -30,6 +30,7 @@ class ARCADIA_API AMyPlayer : public ACharacter
 public:
 	AMyPlayer();
 	class ACorner* Corner;
+	class ATeleports* Teleport;
 
 protected:
 	virtual void BeginPlay() override;

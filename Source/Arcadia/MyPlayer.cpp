@@ -3,6 +3,7 @@
 
 #include "MyPlayer.h"
 #include "Corner.h"
+#include "Teleports.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -120,6 +121,9 @@ void AMyPlayer::ActionKeys()
 {
 	if (Corner && !bTurnCamera) {
 		ChangeDirection();
+	}
+	if (Teleport) {
+		Teleport->TeleportPlayer();
 	}
 }
 

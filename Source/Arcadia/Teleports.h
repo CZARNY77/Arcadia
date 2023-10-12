@@ -4,30 +4,39 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Corner.generated.h"
+#include "Teleports.generated.h"
 
 UCLASS()
-class ARCADIA_API ACorner : public AActor
+class ARCADIA_API ATeleports : public AActor
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditAnywhere, Category = "MeshBlock")
+	UPROPERTY(EditAnywhere, Category = "Teleport settings")
 	class USceneComponent* DummyRoot;
-	UPROPERTY(EditAnywhere, Category = "MeshBlock")
-	class UBoxComponent* MeshBox;
+
+	UPROPERTY(EditAnywhere, Category = "Teleport settings")
+	class UStaticMeshComponent* MeshTeleport_1;
+	UPROPERTY(EditAnywhere, Category = "Teleport settings")
+	class UBoxComponent* BoxCollider_1;
+
+	UPROPERTY(EditAnywhere, Category = "Teleport settings")
+	class UStaticMeshComponent* MeshTeleport_2;
+	UPROPERTY(EditAnywhere, Category = "Teleport settings")
+	class UBoxComponent* BoxCollider_2;
 
 public:	
 	// Sets default values for this actor's properties
-	ACorner();
-	UPROPERTY(EditAnywhere, Category = "Corner Settings")
-	bool AxisX;
-	UPROPERTY(EditAnywhere, Category = "Corner Settings")
-	bool AxisY;
+	ATeleports();
+
+	void TeleportPlayer();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	class AMyPlayer* player;
+	int teleportNumber;
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
