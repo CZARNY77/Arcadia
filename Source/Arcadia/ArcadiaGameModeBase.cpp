@@ -6,4 +6,5 @@
 AArcadiaGameModeBase::AArcadiaGameModeBase()
 {
 	DefaultPawnClass = AMyPlayer::StaticClass();
+	openGate = false;
 }

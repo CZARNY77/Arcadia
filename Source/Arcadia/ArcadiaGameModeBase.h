@@ -17,4 +17,6 @@ class ARCADIA_API AArcadiaGameModeBase : public AGameModeBase
 	
 public:
 	AArcadiaGameModeBase();
+	UPROPERTY(EditAnywhere, Category = "Round Settings")
+	bool openGate;
 };

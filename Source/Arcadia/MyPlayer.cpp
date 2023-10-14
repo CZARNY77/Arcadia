@@ -37,13 +37,14 @@ AMyPlayer::AMyPlayer()
 	X = 0.f; Y = 1.f; Yaw = 0.f;
 	bTurnCamera = false;
 	bResetRotation = true;
+	bCorrect = false;
 	
 }
 
 void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	PlayerController = GetWorld()->GetFirstPlayerController();
 }
 
 void AMyPlayer::ChangeDirection()
@@ -107,14 +108,14 @@ void AMyPlayer::ChangeDirection()
 		directionTurnCamera = -1;
 	}
 	bTurnCamera = true;
-	//wyœrodkowanie postaci
+	//wyśrodkowanie postaci
 	
 	GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 0.f);
-	FVector NewLocation = GetCapsuleComponent()->GetRelativeLocation();
-	NewLocation.Y = Corner->GetActorLocation().Y;
-	NewLocation.X = Corner->GetActorLocation().X;
-	GetCapsuleComponent()->SetRelativeLocation(NewLocation);
-
+	TargetLocation = GetCapsuleComponent()->GetRelativeLocation();
+	TargetLocation.Y = Corner->GetActorLocation().Y;
+	TargetLocation.X = Corner->GetActorLocation().X;
+	bCorrect = true;
+	DisableInput(PlayerController);
 }
 
 void AMyPlayer::ActionKeys()
@@ -179,6 +180,15 @@ void AMyPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	TurnCamera(DeltaTime);
+	if (bCorrect) {
+		FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
+
+		ACharacter::AddMovementInput(Direction);
+		if (FVector::Distance(GetActorLocation(), TargetLocation) < 10.f) {
+			bCorrect = false;
+			EnableInput(PlayerController);
+		}
+	}
 }
 
 void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
