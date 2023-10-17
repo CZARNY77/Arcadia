@@ -19,14 +19,11 @@ class ARCADIA_API ABullet : public AActor
 	class UProjectileMovementComponent* BulletMovementComponent;
 	UPROPERTY(EditAnywhere, Category = "Bullet Settings")
 	class UParticleSystem* DestroyParticleEmitter;
-	UPROPERTY(EditAnywhere, Category = "Bullet Settings")
-	class USphereComponent* CollisionComponent;
 public:	
 	// Sets default values for this actor's properties
 	ABullet();
 
 	void SetBulletVelocity(FVector bulletDirection);
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

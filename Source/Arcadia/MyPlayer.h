@@ -48,6 +48,7 @@ protected:
 
 	void ChangeDirection();		// funkcja odpowiada za zmiane kierunku obracania kamery
 	void TurnCamera(float dt);	// funkcja obraca kamera
+	void Correct();
 
 	void ActionKeys();			// funckja z akcjami po klikniêciu
 	void Shot();

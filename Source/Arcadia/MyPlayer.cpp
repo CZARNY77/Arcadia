@@ -170,6 +170,19 @@ void AMyPlayer::TurnCamera(float dt)
 	}
 }
 
+void AMyPlayer::Correct()
+{
+	if (bCorrect) {
+		FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
+
+		ACharacter::AddMovementInput(Direction);
+		if (FVector::Distance(GetActorLocation(), TargetLocation) < 10.f) {
+			bCorrect = false;
+			EnableInput(PlayerController);
+		}
+	}
+}
+
 void AMyPlayer::Move(float val)
 {
 	AddMovementInput(FVector(X, Y, 0.0f), val);
@@ -180,15 +193,7 @@ void AMyPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	TurnCamera(DeltaTime);
-	if (bCorrect) {
-		FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
-
-		ACharacter::AddMovementInput(Direction);
-		if (FVector::Distance(GetActorLocation(), TargetLocation) < 10.f) {
-			bCorrect = false;
-			EnableInput(PlayerController);
-		}
-	}
+	Correct();
 }
 
 void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

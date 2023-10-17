@@ -15,7 +15,9 @@ ABullet::ABullet()
 
 	Bullet = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionBullet"));
 	Bullet->InitSphereRadius(5.f);
-	Bullet->SetCollisionProfileName("Trigger");
+	Bullet->SetCollisionProfileName("BlockAll");
+	Bullet->SetCollisionObjectType(ECC_GameTraceChannel1);
+	Bullet->IgnoreActorWhenMoving(this, true);
 	RootComponent = Bullet;
 
 	MeshBullet = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshBullet"));
@@ -27,12 +29,9 @@ ABullet::ABullet()
 	BulletMovementComponent->ProjectileGravityScale = 0.f;
 	BulletMovementComponent->SetUpdatedComponent(Bullet);
 
-	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
-	CollisionComponent->InitSphereRadius(10.0f); // Ustaw odpowiedni¹ wielkoœæ dla Twojego obiektu Bullet
-	CollisionComponent->SetCollisionProfileName("PhysicsActor"); // Ustaw odpowiedni profil kolizji
-	CollisionComponent->SetupAttachment(Bullet);
-	CollisionComponent->OnComponentHit.AddDynamic(this, &ABullet::OnHit);
+	Bullet->OnComponentHit.AddDynamic(this, &ABullet::OnHit);
 
+	speed = 2000.f;
 }
 
 void ABullet::SetBulletVelocity(FVector bulletDirection)
@@ -68,18 +67,19 @@ void ABullet::DestroyBullet()
 	}
 }
 
-void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (OtherActor && OtherActor != this)
 	{
 		DestroyBullet();
 	}
+	DestroyBullet();
 }
 
 // Called every frame
 void ABullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 }
 
