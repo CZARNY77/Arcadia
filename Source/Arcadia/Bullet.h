@@ -22,18 +22,16 @@ class ARCADIA_API ABullet : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABullet();
-
-	void SetBulletVelocity(FVector bulletDirection);
+	void SetBulletParameters(FVector bulletDirection, class AMyPlayer* player);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	UFUNCTION(BlueprintCallable, Category = "Bullet class")
 	void DestroyBullet();
 
 	UPROPERTY(EditAnywhere, Category = "Bullet Settings")
 	float speed;
 
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

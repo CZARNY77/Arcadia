@@ -2,6 +2,7 @@
 
 
 #include "Bullet.h"
+#include "MyPlayer.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,7 +17,6 @@ ABullet::ABullet()
 	Bullet = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionBullet"));
 	Bullet->InitSphereRadius(5.f);
 	Bullet->SetCollisionProfileName("BlockAll");
-	Bullet->SetCollisionObjectType(ECC_GameTraceChannel1);
 	Bullet->IgnoreActorWhenMoving(this, true);
 	RootComponent = Bullet;
 
@@ -29,14 +29,15 @@ ABullet::ABullet()
 	BulletMovementComponent->ProjectileGravityScale = 0.f;
 	BulletMovementComponent->SetUpdatedComponent(Bullet);
 
-	Bullet->OnComponentHit.AddDynamic(this, &ABullet::OnHit);
-
 	speed = 2000.f;
 }
 
-void ABullet::SetBulletVelocity(FVector bulletDirection)
+void ABullet::SetBulletParameters(FVector bulletDirection, class AMyPlayer* player)
 {
 	BulletMovementComponent->Velocity = bulletDirection * speed;
+	if (player) {
+		Bullet->IgnoreActorWhenMoving(player, true);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -67,14 +68,6 @@ void ABullet::DestroyBullet()
 	}
 }
 
-void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-	if (OtherActor && OtherActor != this)
-	{
-		DestroyBullet();
-	}
-	DestroyBullet();
-}
 
 // Called every frame
 void ABullet::Tick(float DeltaTime)

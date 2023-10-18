@@ -144,7 +144,7 @@ void AMyPlayer::Shot()
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("B direction: %f %f %f"), bulletDirection.X, bulletDirection.Y, bulletDirection.Z));
 		
 		ABullet* newBullet = GetWorld()->SpawnActor<ABullet>(Bullet, SpawnLocation, SpawnRotation);
-		newBullet->SetBulletVelocity(bulletDirection);
+		newBullet->SetBulletParameters(bulletDirection, this);
 	}
 }
 
