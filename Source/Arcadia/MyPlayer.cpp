@@ -4,10 +4,12 @@
 #include "MyPlayer.h"
 #include "Corner.h"
 #include "Teleports.h"
+#include "Enemy.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AMyPlayer::AMyPlayer()
@@ -21,7 +23,7 @@ AMyPlayer::AMyPlayer()
 	SpringArm->SocketOffset = FVector(0.f, 0.f, 60.f);
 	SpringArm->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
 	SpringArm->bEnableCameraLag = true;
-	SpringArm->CameraLagSpeed = 5.f;
+	SpringArm->CameraLagSpeed = 3.f;
 	SpringArm->SetupAttachment(RootComponent);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -130,9 +132,10 @@ void AMyPlayer::ActionKeys()
 
 void AMyPlayer::Shot()
 {
+
 	if (Bullet) {
 		FVector weaponLocation = GetMesh()->GetBoneLocation("weapon_l");
-		FVector bulletDirection = this->GetActorForwardVector();
+		FVector bulletDirection = AutoAim();
 
 		int barrelDirection;
 		if(bulletDirection.Y != 0.f && Y != 0.f) barrelDirection = bulletDirection.Y >= 0.f ? 1 : -1;
@@ -146,6 +149,33 @@ void AMyPlayer::Shot()
 		ABullet* newBullet = GetWorld()->SpawnActor<ABullet>(Bullet, SpawnLocation, SpawnRotation);
 		newBullet->SetBulletParameters(bulletDirection, this);
 	}
+}
+
+FVector AMyPlayer::AutoAim()
+{
+	FVector StartLocation = GetActorLocation(); // Początkowa pozycja pocisku
+	FVector EndLocation = StartLocation + GetActorForwardVector() * 1000.f; // Końcowa pozycja pocisku, na podstawie kierunku ruchu i maksymalnej odległości
+
+	FCollisionQueryParams CollisionParams; // Parametry zapytania kolizji
+	CollisionParams.AddIgnoredActor(this); // Ignorujemy samego siebie, jeśli to jest obiekt pocisku
+
+	FHitResult HitResult; // Wynik trafienia
+
+	// Wykrywanie kolizji wzdłuż linii od początku do końca
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, CollisionParams);
+
+	if (bHit)
+	{
+		// Kolizja z obiektem, który znajduje się w HitResult.Actor
+		// Tutaj możesz dodać logikę obsługi trafienia, obrażeń, itp.
+		if (HitResult.GetActor()->ActorHasTag("Enemy")) {
+			DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Red, false, 1, 0, 1);
+			return HitResult.GetActor()->GetActorLocation();
+		}
+	}
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Green, false, 1, 0, 1);
+	
+	return this->GetActorForwardVector();
 }
 
 void AMyPlayer::TurnCamera(float dt)
@@ -186,6 +216,7 @@ void AMyPlayer::Correct()
 void AMyPlayer::Move(float val)
 {
 	AddMovementInput(FVector(X, Y, 0.0f), val);
+	SpringArm->TargetOffset = FVector(400 * val * X, 400 * val * Y, 0.f);
 }
 
 

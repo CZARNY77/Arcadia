@@ -23,9 +23,11 @@ AEnemy::AEnemy()
 	bPatrol = true;
 }
 
-void AEnemy::Death()
+void AEnemy::GetDmg(int dmg)
 {
-	Destroy();
+	hp -= dmg;
+	if(hp <= 0)
+		Destroy();
 }
 
 // Called when the game starts or when spawned
@@ -79,7 +81,7 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (Cast<AMyPlayer>(OtherActor)) {
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Widze cie"));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Widze cie"));
 		player = Cast<AMyPlayer>(OtherActor);
 		bPatrol = false;
 	}
@@ -89,7 +91,7 @@ void AEnemy::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActo
 void AEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (Cast<AMyPlayer>(OtherActor)) {
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Uciekasz?"));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Uciekasz?"));
 		bPatrol = true;
 	}
 }

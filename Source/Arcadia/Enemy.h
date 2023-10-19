@@ -25,7 +25,8 @@ public:
 	// Sets default values for this character's properties
 	AEnemy();
 
-	void Death();
+	UFUNCTION(BlueprintCallable, Category = "Enemy class")
+	void GetDmg(int dmg);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,6 +38,9 @@ protected:
 	int countSpline;
 	int maxCountSpline;
 	int tempCount;
+
+	UPROPERTY(EditAnywhere, Category = "Enemy Settings")
+	int hp;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

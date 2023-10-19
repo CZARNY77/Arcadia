@@ -27,6 +27,7 @@ class ARCADIA_API AMyPlayer : public ACharacter
 	class USceneComponent* Barrel;
 	UPROPERTY(EditAnywhere, Category = "Shot Settings")
 	TSubclassOf<class ABullet> Bullet;
+
 public:
 	AMyPlayer();
 	class ACorner* Corner;
@@ -52,6 +53,7 @@ protected:
 
 	void ActionKeys();			// funckja z akcjami po klikniêciu
 	void Shot();
+	FVector AutoAim();
 private:
 	void Move(float val);
 
@@ -59,5 +61,4 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 };
