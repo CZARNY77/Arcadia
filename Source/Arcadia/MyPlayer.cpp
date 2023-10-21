@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AMyPlayer::AMyPlayer()
@@ -39,6 +40,7 @@ AMyPlayer::AMyPlayer()
 	X = 0.f; Y = 1.f; Yaw = 0.f;
 	bTurnCamera = false;
 	bResetRotation = true;
+	bCanShot = false;
 	bCorrect = false;
 	
 }
@@ -47,6 +49,10 @@ void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerController = GetWorld()->GetFirstPlayerController();
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AMyPlayer::SwitchCanShot, 4.0f, false);
+
 }
 
 void AMyPlayer::ChangeDirection()
@@ -133,7 +139,7 @@ void AMyPlayer::ActionKeys()
 void AMyPlayer::Shot()
 {
 
-	if (Bullet) {
+	if (Bullet && bCanShot) {
 		FVector weaponLocation = GetMesh()->GetBoneLocation("weapon_l");
 		FVector bulletDirection = AutoAim();
 
@@ -153,29 +159,31 @@ void AMyPlayer::Shot()
 
 FVector AMyPlayer::AutoAim()
 {
-	FVector StartLocation = GetActorLocation(); // Początkowa pozycja pocisku
-	FVector EndLocation = StartLocation + GetActorForwardVector() * 1000.f; // Końcowa pozycja pocisku, na podstawie kierunku ruchu i maksymalnej odległości
+	FVector StartLocation = GetActorLocation();
+	FVector EndLocation = (StartLocation + GetActorForwardVector() * 1000.f) - FVector(70.f*Y, 70.f*X, 0.f);
+	FVector bulletDirection = this->GetActorForwardVector();
 
-	FCollisionQueryParams CollisionParams; // Parametry zapytania kolizji
-	CollisionParams.AddIgnoredActor(this); // Ignorujemy samego siebie, jeśli to jest obiekt pocisku
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
 
-	FHitResult HitResult; // Wynik trafienia
+	FHitResult HitResult;
 
-	// Wykrywanie kolizji wzdłuż linii od początku do końca
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, CollisionParams);
+	for (int i = 0; i <= 5; i++) {
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, CollisionParams);
 
-	if (bHit)
-	{
-		// Kolizja z obiektem, który znajduje się w HitResult.Actor
-		// Tutaj możesz dodać logikę obsługi trafienia, obrażeń, itp.
-		if (HitResult.GetActor()->ActorHasTag("Enemy")) {
-			DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Red, false, 1, 0, 1);
-			return HitResult.GetActor()->GetActorLocation();
+		if (bHit)
+		{
+			if (HitResult.GetActor()->ActorHasTag("Enemy")) {
+				//DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Red, false, 1, 0, 1);
+				FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(StartLocation, HitResult.GetActor()->GetActorLocation());
+				SetActorRotation(NewRotation);
+				bulletDirection -= FVector(0.f, 0.f, 0.1f);
+				break;
+			}
 		}
+		EndLocation += FVector(50.f*Y, 50.f*X, 0.f);
 	}
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Green, false, 1, 0, 1);
-	
-	return this->GetActorForwardVector();
+	return bulletDirection;
 }
 
 void AMyPlayer::TurnCamera(float dt)
@@ -198,6 +206,11 @@ void AMyPlayer::TurnCamera(float dt)
 		}
 			
 	}
+}
+
+void AMyPlayer::SwitchCanShot()
+{
+	bCanShot = !bCanShot;
 }
 
 void AMyPlayer::Correct()

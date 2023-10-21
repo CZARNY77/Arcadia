@@ -43,12 +43,15 @@ protected:
 	bool bTurnCamera;
 	bool bResetRotation;
 
+	bool bCanShot;
 	bool bCorrect;
 	FVector TargetLocation;
 	class APlayerController* PlayerController;
 
+
 	void ChangeDirection();		// funkcja odpowiada za zmiane kierunku obracania kamery
 	void TurnCamera(float dt);	// funkcja obraca kamera
+	void SwitchCanShot();
 	void Correct();
 
 	void ActionKeys();			// funckja z akcjami po klikniêciu

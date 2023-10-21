@@ -63,11 +63,12 @@ void AEnemy::Patroling(float dt)
 
 void AEnemy::FocusOnPlayer(float dt)
 {
-	if (!bPatrol && player) {
+
+	/*if (!bPatrol && player) {
 		FVector TargetLocation = player->GetActorLocation();
 		FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
 		AddMovementInput(Direction);
-	}
+	}*/
 }
 
 // Called every frame
