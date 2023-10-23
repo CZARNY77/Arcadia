@@ -33,6 +33,8 @@ public:
 	class ACorner* Corner;
 	class ATeleports* Teleport;
 
+	void Death();
+
 protected:
 	virtual void BeginPlay() override;
 

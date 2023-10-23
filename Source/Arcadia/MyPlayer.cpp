@@ -45,6 +45,10 @@ AMyPlayer::AMyPlayer()
 	
 }
 
+void AMyPlayer::Death()
+{
+}
+
 void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
