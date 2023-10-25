@@ -34,7 +34,7 @@ public:
 	class ATeleports* Teleport;
 
 	void Death();
-
+	void AutoNav(FVector TLocation);
 protected:
 	virtual void BeginPlay() override;
 

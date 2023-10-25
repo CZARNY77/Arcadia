@@ -19,4 +19,12 @@ public:
 	AArcadiaGameModeBase();
 	UPROPERTY(EditAnywhere, Category = "Round Settings")
 	bool openGate;
+	class AGate* gate;
+
+	void PickUpKey();
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Round Settings")
+	int countKeys;
+	int ownedKeys;
 };

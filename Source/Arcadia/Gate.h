@@ -19,15 +19,18 @@ class ARCADIA_API AGate : public AActor
 	class UMaterial* OpenGateM;
 	UPROPERTY(EditAnywhere, Category = "Gate Settings")
 	class UMaterial* CloseGateM;
+	UPROPERTY(EditAnywhere, Category = "Gate Settings")
+	class USceneComponent* Exit;
 	
 public:	
 	// Sets default values for this actor's properties
 	AGate();
 
+	void OpenGate();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	void OpenGate();
 
 	class AArcadiaGameModeBase* GameMode;
 

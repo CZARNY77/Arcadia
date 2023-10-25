@@ -122,12 +122,8 @@ void AMyPlayer::ChangeDirection()
 	bTurnCamera = true;
 	//wyśrodkowanie postaci
 	
-	GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 0.f);
-	TargetLocation = GetCapsuleComponent()->GetRelativeLocation();
-	TargetLocation.Y = Corner->GetActorLocation().Y;
-	TargetLocation.X = Corner->GetActorLocation().X;
-	bCorrect = true;
-	DisableInput(PlayerController);
+	FVector TempLocation = Corner->GetActorLocation();
+	AutoNav(TempLocation);
 }
 
 void AMyPlayer::ActionKeys()
@@ -228,6 +224,16 @@ void AMyPlayer::Correct()
 			EnableInput(PlayerController);
 		}
 	}
+}
+
+void AMyPlayer::AutoNav(FVector TLocation)
+{
+	SpringArm->TargetOffset = FVector(0.f, 0.f, 0.f);
+	GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 0.f);
+	DisableInput(PlayerController);
+	bCorrect = true;
+	TargetLocation.Z = GetCapsuleComponent()->GetRelativeLocation().Z;
+	TargetLocation = TLocation;
 }
 
 void AMyPlayer::Move(float val)

@@ -2,6 +2,7 @@
 
 
 #include "Gate.h"
+#include "MyPlayer.h"
 #include "Components/BoxComponent.h"
 #include "ArcadiaGameModeBase.h"
 
@@ -19,6 +20,9 @@ AGate::AGate()
 	BoxCollider->SetCollisionProfileName("Trigger");
 	BoxCollider->SetupAttachment(GateMesh);
 
+	Exit = CreateDefaultSubobject<USceneComponent>(TEXT("Exit"));
+	Exit->SetupAttachment(GateMesh);
+
 }
 
 // Called when the game starts or when spawned
@@ -29,6 +33,7 @@ void AGate::BeginPlay()
 	BoxCollider->OnComponentEndOverlap.AddDynamic(this, &AGate::OnOverlapEnd);
 	DrawDebugBox(GetWorld(), BoxCollider->GetComponentLocation(), BoxCollider->GetScaledBoxExtent(), FQuat(GetActorRotation()), FColor::Turquoise, true, -1, 0, 2);
 	GameMode = GetWorld()->GetAuthGameMode<AArcadiaGameModeBase>();
+	GameMode->gate = this;
 	OpenGate();
 }
 
@@ -52,6 +57,7 @@ void AGate::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 	if (AMyPlayer* player = Cast<AMyPlayer>(OtherActor)) {
 		if (GameMode->openGate) {
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("You Win"));
+			player->AutoNav(Exit->GetComponentLocation());
 		}
 	}
 }
