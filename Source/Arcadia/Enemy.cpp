@@ -4,6 +4,10 @@
 #include "Enemy.h"
 #include "PathPatrol.h"
 #include "MyPlayer.h"
+#include "Animation/AnimInstance.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -16,18 +20,42 @@ AEnemy::AEnemy()
 	ViewRange->SetCollisionProfileName("Trigger");
 	ViewRange->SetupAttachment(RootComponent);
 
+	TargetAim = CreateDefaultSubobject<USceneComponent>(TEXT("TargetAim"));
+	TargetAim->SetupAttachment(RootComponent);
+
+	Barrel = CreateDefaultSubobject<USceneComponent>(TEXT("Barrel"));
+	Barrel->SetupAttachment(GetMesh());
+
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	countSpline = 0;
 	tempCount = 1;
 	bPatrol = true;
+	bCanShot = true;
+	bIsDead = false;
 }
 
 void AEnemy::GetDmg(int dmg)
 {
 	hp -= dmg;
-	if(hp <= 0)
-		Destroy();
+	if (hp <= 0) {
+		bIsDead = true;
+		bPatrol = false;
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if (DeathMontage) {
+			PlayAnimMontage(DeathMontage);
+			return;
+		}
+	}
+	PlayAnimMontage(GetDmgMontage);
+}
+
+void AEnemy::Death()
+{
+	if (DestroyParticleEmitter) {
+		UGameplayStatics::SpawnEmitterAtLocation(this, DestroyParticleEmitter, GetMesh()->GetComponentLocation(), GetActorRotation());
+	}
+	Destroy();
 }
 
 // Called when the game starts or when spawned
@@ -44,7 +72,7 @@ void AEnemy::BeginPlay()
 
 void AEnemy::Patroling(float dt)
 {
-	if (bPatrol && PathPatrol) {
+	if (bPatrol && PathPatrol && !bIsDead) {
 		
 		FVector TargetLocation = PathPatrol->SplineComponent->GetLocationAtSplinePoint(countSpline, ESplineCoordinateSpace::World);
 		TargetLocation.Z = GetActorLocation().Z;
@@ -64,11 +92,43 @@ void AEnemy::Patroling(float dt)
 void AEnemy::FocusOnPlayer(float dt)
 {
 
-	/*if (!bPatrol && player) {
-		FVector TargetLocation = player->GetActorLocation();
-		FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
-		AddMovementInput(Direction);
-	}*/
+	if (!bPatrol && player && !bIsDead) {
+		AutoAim(dt);
+		Shot();
+	}
+}
+
+void AEnemy::AutoAim(float dt)
+{
+	if (player) {
+		FVector StartLocation = GetActorLocation();
+		FVector TargetEnemy = player->TargetAim->GetComponentLocation() + FVector(0.f, 0.f, -70.f);
+		ArmRotation = UKismetMathLibrary::FindLookAtRotation(StartLocation, TargetEnemy);
+		float YawArmRotation = (ArmRotation.Yaw / 90.f);
+		if (YawArmRotation >= 0.5f && YawArmRotation < 1.5f)	ArmRotation.Yaw -= 90.f;
+		else if (YawArmRotation <= -0.5f && YawArmRotation > -1.5f)	ArmRotation.Yaw += 90.f;
+		else if (YawArmRotation <= -1.5f || YawArmRotation > 1.5f)	ArmRotation.Yaw += int(YawArmRotation) * 180;
+	}
+	else {
+		ArmRotation = FMath::RInterpTo(FRotator(0.f, 10.f, 0.f), ArmRotation, dt, 5.f);
+	}
+}
+
+void AEnemy::Shot()
+{
+	if (Bullet && bCanShot && !player->isDead()) {
+		FRotator weaponDirection = GetMesh()->GetBoneQuaternion("weapon_l").Rotator();
+		weaponDirection.Yaw += 90.f;
+		FVector weaponLocation = GetMesh()->GetBoneLocation("weapon_l");
+		FVector RotatedLocation = FQuat(weaponDirection).RotateVector(FVector(40, 0.f, 2.f));
+		Barrel->SetWorldLocation(weaponLocation + RotatedLocation);
+
+		FVector SpawnLocation = Barrel->GetComponentLocation();
+		FRotator SpawnRotation = GetActorRotation();
+		ABullet* newBullet = GetWorld()->SpawnActor<ABullet>(Bullet, SpawnLocation, SpawnRotation);
+		newBullet->SetBulletParameters(weaponDirection.Vector(), this);
+		BPShot();
+	}
 }
 
 // Called every frame
@@ -94,5 +154,6 @@ void AEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActo
 	if (Cast<AMyPlayer>(OtherActor)) {
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Uciekasz?"));
 		bPatrol = true;
+		player = nullptr;
 	}
 }

@@ -4,6 +4,7 @@
 #include "Teleports.h"
 #include "MyPlayer.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ATeleports::ATeleports()
@@ -55,14 +56,32 @@ void ATeleports::Tick(float DeltaTime)
 
 }
 
+void ATeleports::StartingTeleport()
+{
+	if (TeleportEffect) {
+		FTimerHandle UnusedHandle;
+		GetWorld()->GetTimerManager().SetTimer(UnusedHandle, this, &ATeleports::TeleportPlayer, 0.1f, false);
+		if (teleportNumber == 1)
+			UGameplayStatics::SpawnEmitterAtLocation(this, TeleportEffect, BoxCollider_1->GetComponentLocation(), GetActorRotation());
+		else if (teleportNumber == 2)
+			UGameplayStatics::SpawnEmitterAtLocation(this, TeleportEffect, BoxCollider_2->GetComponentLocation(), GetActorRotation());
+	}
+}
+
 void ATeleports::TeleportPlayer()
 {
 	if (player) {
-		if (teleportNumber == 1)		player->SetActorLocation(BoxCollider_2->GetComponentLocation());
-		else if (teleportNumber == 2)	player->SetActorLocation(BoxCollider_1->GetComponentLocation());
+		if (teleportNumber == 1) {
+			player->SetActorLocation(BoxCollider_2->GetComponentLocation());
+			UGameplayStatics::SpawnEmitterAtLocation(this, TeleportEffect, BoxCollider_2->GetComponentLocation(), GetActorRotation());
+		}
+		else if (teleportNumber == 2) {
+			player->SetActorLocation(BoxCollider_1->GetComponentLocation());
+			UGameplayStatics::SpawnEmitterAtLocation(this, TeleportEffect, BoxCollider_1->GetComponentLocation(), GetActorRotation());
+		}
 	}
-
 }
+
 
 void ATeleports::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

@@ -23,12 +23,14 @@ class ARCADIA_API ATeleports : public AActor
 	class UStaticMeshComponent* MeshTeleport_2;
 	UPROPERTY(EditAnywhere, Category = "Teleport settings")
 	class UBoxComponent* BoxCollider_2;
+	UPROPERTY(EditAnywhere, Category = "Teleport settings")
+	class UParticleSystem* TeleportEffect;
 
 public:	
 	// Sets default values for this actor's properties
 	ATeleports();
 
-	void TeleportPlayer();
+	void StartingTeleport();
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,7 +38,8 @@ protected:
 
 	class AMyPlayer* player;
 	int teleportNumber;
-	
+
+	void TeleportPlayer();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

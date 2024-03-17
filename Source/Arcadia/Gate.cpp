@@ -5,6 +5,9 @@
 #include "MyPlayer.h"
 #include "Components/BoxComponent.h"
 #include "ArcadiaGameModeBase.h"
+#include "MyHUD.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AGate::AGate()
@@ -37,6 +40,11 @@ void AGate::BeginPlay()
 	OpenGate();
 }
 
+void AGate::LoadNextLevel()
+{
+	UGameplayStatics::OpenLevel(this, NextLevel);
+}
+
 void AGate::OpenGate()
 {
 	if (GameMode) {
@@ -56,8 +64,11 @@ void AGate::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 {
 	if (AMyPlayer* player = Cast<AMyPlayer>(OtherActor)) {
 		if (GameMode->openGate) {
+			GameMode->MyHUD->OnCurtain();
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("You Win"));
 			player->AutoNav(Exit->GetComponentLocation());
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AGate::LoadNextLevel, 2.0f, false);
 		}
 	}
 }

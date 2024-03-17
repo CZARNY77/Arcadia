@@ -19,11 +19,23 @@ public:
 	AArcadiaGameModeBase();
 	UPROPERTY(EditAnywhere, Category = "Round Settings")
 	bool openGate;
+	bool bPauseGame;
 	class AGate* gate;
+	class APlayerController* PlayerController;
+	class AMyHUD* MyHUD;
+	class AFairy* MyFairy;
 
 	void PickUpKey();
+	UFUNCTION(BlueprintCallable)
+	FText TextPoints();
+	UFUNCTION(BlueprintCallable)
+	void PauseGame();
+	UFUNCTION(BlueprintCallable)
+	void ResumeGame();
 
 protected:
+	virtual void BeginPlay() override;
+
 	UPROPERTY(EditAnywhere, Category = "Round Settings")
 	int countKeys;
 	int ownedKeys;

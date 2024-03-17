@@ -16,6 +16,9 @@ class ARCADIA_API AObstacle : public AActor
 	UPROPERTY(EditAnywhere, Category = "Obstacle Settings")
 	class UBoxComponent* BoxCollider;
 	
+	UPROPERTY(EditAnywhere, Category = "Obstacle Settings")
+	class UBoxComponent* LavaCollider;
+
 public:	
 	// Sets default values for this actor's properties
 	AObstacle();

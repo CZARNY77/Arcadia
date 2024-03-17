@@ -22,11 +22,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	class AArcadiaGameModeBase* MyGameMode;
+	class AMyPlayer* player;
+
+	FVector CalculateFairyMovement(const FVector& PlayerLocation);
+	void Fly(float dt);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	UFUNCTION(BlueprintImplementableEvent, Category = "Default")
+	void AddSystemLog(const FString& prompt);
 };

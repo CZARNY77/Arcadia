@@ -10,6 +10,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
+#include "MyHUD.h"
+#include "Kismet/GameplayStatics.h"
+#include "ArcadiaGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -34,6 +37,14 @@ AMyPlayer::AMyPlayer()
 	Barrel = CreateDefaultSubobject<USceneComponent>(TEXT("Barrel"));
 	Barrel->SetupAttachment(GetMesh());
 
+	ViewRange = CreateDefaultSubobject<UBoxComponent>(TEXT("ViewRange"));
+	ViewRange->InitBoxExtent(FVector(100, 50, 50));
+	ViewRange->SetCollisionProfileName("Trigger");
+	ViewRange->SetupAttachment(RootComponent);
+
+	TargetAim = CreateDefaultSubobject<USceneComponent>(TEXT("TargetAim"));
+	TargetAim->SetupAttachment(RootComponent);
+
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 
@@ -42,17 +53,39 @@ AMyPlayer::AMyPlayer()
 	bResetRotation = true;
 	bCanShot = false;
 	bCorrect = false;
+	hp = 5;
 	
+}
+
+void AMyPlayer::GetDmg(int dmg)
+{
+
+	hp -= dmg;
+	if (MyGameMode->MyHUD)	MyGameMode->MyHUD->GetDmg();;
+	if (hp <= 0) {
+		if (DeathMontage) {
+			PlayAnimMontage(DeathMontage);
+			DisableInput(PlayerController);
+			return;
+		}
+	}
+	PlayAnimMontage(GetDmgMontage);
 }
 
 void AMyPlayer::Death()
 {
+	//Destroy();
 }
 
 void AMyPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	MyGameMode = Cast<AArcadiaGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	PlayerController = GetWorld()->GetFirstPlayerController();
+	DisableInput(PlayerController);
+	
+	ViewRange->OnComponentBeginOverlap.AddDynamic(this, &AMyPlayer::OnOverlapBox);
+	ViewRange->OnComponentEndOverlap.AddDynamic(this, &AMyPlayer::OnOverlapEnd);
 
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AMyPlayer::SwitchCanShot, 4.0f, false);
@@ -132,37 +165,31 @@ void AMyPlayer::ActionKeys()
 		ChangeDirection();
 	}
 	if (Teleport) {
-		Teleport->TeleportPlayer();
+		Teleport->StartingTeleport();
 	}
 }
 
 void AMyPlayer::Shot()
 {
-
 	if (Bullet && bCanShot) {
+		FRotator weaponDirection = GetMesh()->GetBoneQuaternion("weapon_l").Rotator();
+		weaponDirection.Yaw += 90.f;
 		FVector weaponLocation = GetMesh()->GetBoneLocation("weapon_l");
-		FVector bulletDirection = AutoAim();
-
-		int barrelDirection;
-		if(bulletDirection.Y != 0.f && Y != 0.f) barrelDirection = bulletDirection.Y >= 0.f ? 1 : -1;
-		if(bulletDirection.X != 0.f && X != 0.f) barrelDirection = bulletDirection.X >= 0.f ? 1 : -1;
-		Barrel->SetWorldLocation(weaponLocation + FVector(1.f, 40.f * barrelDirection, 13.f));
+		FVector RotatedLocation = FQuat(weaponDirection).RotateVector(FVector(40, 0.f, 2.f));
+		Barrel->SetWorldLocation(weaponLocation + RotatedLocation);
 		
 		FVector SpawnLocation = Barrel->GetComponentLocation();
 		FRotator SpawnRotation = GetActorRotation();
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("B direction: %f %f %f"), bulletDirection.X, bulletDirection.Y, bulletDirection.Z));
-		
 		ABullet* newBullet = GetWorld()->SpawnActor<ABullet>(Bullet, SpawnLocation, SpawnRotation);
-		newBullet->SetBulletParameters(bulletDirection, this);
+		newBullet->SetBulletParameters(weaponDirection.Vector(), this);
 	}
 }
 
-FVector AMyPlayer::AutoAim()
+void AMyPlayer::AutoAim(float dt)
 {
-	FVector StartLocation = GetActorLocation();
-	FVector EndLocation = (StartLocation + GetActorForwardVector() * 1000.f) - FVector(70.f*Y, 70.f*X, 0.f);
-	FVector bulletDirection = this->GetActorForwardVector();
-
+	/*FVector StartLocation = GetActorLocation();
+	FVector EndLocation = (StartLocation + GetActorForwardVector() * 1000.f) - FVector(70.f * Y, 70.f * X, 0.f);
+	FRotator NewRotation;
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
 
@@ -170,20 +197,58 @@ FVector AMyPlayer::AutoAim()
 
 	for (int i = 0; i <= 5; i++) {
 		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, CollisionParams);
-
+		//DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Green, false, 1, 0, 1);
 		if (bHit)
 		{
 			if (HitResult.GetActor()->ActorHasTag("Enemy")) {
 				//DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Red, false, 1, 0, 1);
-				FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(StartLocation, HitResult.GetActor()->GetActorLocation());
-				SetActorRotation(NewRotation);
-				bulletDirection -= FVector(0.f, 0.f, 0.1f);
+
+				NewRotation = UKismetMathLibrary::FindLookAtRotation(StartLocation, HitResult.GetActor()->GetActorLocation());
+				NewRotation.Pitch = 0.f;
+				float AbsNewRotationYaw = FMath::Abs(NewRotation.Yaw);
+				//SetActorRotation(NewRotation);
+				if (AbsNewRotationYaw <= (SaveRotation + 2.0f) && AbsNewRotationYaw >= (SaveRotation - 2.0f)) {
+					bTurnRight = false;
+					bTurnLeft = false;
+				}
+				if (bFirstSave) {
+					bFirstSave = false;
+					SaveRotation = AbsNewRotationYaw;
+				}
+				if (AbsNewRotationYaw >= (SaveRotation + 9.0f) || AbsNewRotationYaw <= (SaveRotation - 9.0f)) {
+					if (AbsNewRotationYaw >= (SaveRotation + 9.0f))	bTurnRight = true;
+					if (AbsNewRotationYaw <= (SaveRotation - 9.0f))	bTurnLeft = true;
+					SaveRotation = AbsNewRotationYaw;
+					SetActorRotation(NewRotation);
+				}
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("NewRotation: %f %f %f %f"), NewRotation.Pitch, NewRotation.Roll, NewRotation.Yaw, SaveRotation));
+				if (NewRotation.Yaw > 60.0f && NewRotation.Yaw < 120.0f) NewRotation.Yaw -= 90.0f;
+				if (NewRotation.Yaw < -60.0f && NewRotation.Yaw > -120.0f) NewRotation.Yaw += 90.0f;
+				if (NewRotation.Yaw < -160.0f && NewRotation.Yaw >= -180.0f)	NewRotation.Yaw += 180.0f;
+				if (NewRotation.Yaw > 160.f && NewRotation.Yaw <= 180.0f)	NewRotation.Yaw -= 180.0f;
+				//if (AbsNewRotationYaw > 60.0f && AbsNewRotationYaw <= 120.0f)	NewRotation.Yaw -= 90.0f;
+				//if (AbsNewRotationYaw > 120.f && AbsNewRotationYaw <= 180.0f)	NewRotation.Yaw -= 180.0f;
 				break;
 			}
+			bFirstSave = true;
 		}
 		EndLocation += FVector(50.f*Y, 50.f*X, 0.f);
 	}
-	return bulletDirection;
+	CurrentEnemyRotation = FMath::RInterpTo(GetActorRotation(), NewRotation, dt, 5.0f);*/
+
+	if (Enemy) {
+		FVector StartLocation = GetActorLocation();
+		FVector TargetEnemy = Enemy->TargetAim->GetComponentLocation() + FVector(0.f, 0.f, -70.f);
+		ArmRotation = UKismetMathLibrary::FindLookAtRotation(StartLocation, TargetEnemy);
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("NewRotation: %f %f %f"), ArmRotation.Pitch, ArmRotation.Roll, ArmRotation.Yaw));
+		float YawArmRotation = (ArmRotation.Yaw / 90.f);
+		if (YawArmRotation >= 0.5f && YawArmRotation < 1.5f)	ArmRotation.Yaw -= 90.f;
+		else if (YawArmRotation <= -0.5f && YawArmRotation > -1.5f)	ArmRotation.Yaw += 90.f;
+		else if (YawArmRotation <= -1.5f || YawArmRotation > 1.5f)	ArmRotation.Yaw += int(YawArmRotation) * 180;
+	}
+	else {
+		ArmRotation = FMath::RInterpTo(FRotator(0.f, 10.f, 0.f), ArmRotation, dt, 5.f);
+	}
 }
 
 void AMyPlayer::TurnCamera(float dt)
@@ -211,6 +276,7 @@ void AMyPlayer::TurnCamera(float dt)
 void AMyPlayer::SwitchCanShot()
 {
 	bCanShot = !bCanShot;
+	EnableInput(PlayerController);
 }
 
 void AMyPlayer::Correct()
@@ -231,9 +297,15 @@ void AMyPlayer::AutoNav(FVector TLocation)
 	SpringArm->TargetOffset = FVector(0.f, 0.f, 0.f);
 	GetCharacterMovement()->Velocity = FVector(0.f, 0.f, 0.f);
 	DisableInput(PlayerController);
-	bCorrect = true;
-	TargetLocation.Z = GetCapsuleComponent()->GetRelativeLocation().Z;
 	TargetLocation = TLocation;
+	TargetLocation.Z = GetCapsuleComponent()->GetRelativeLocation().Z;
+	bCorrect = true;
+}
+
+bool AMyPlayer::isDead()
+{
+	if (hp <= 0) return true;
+	return false;
 }
 
 void AMyPlayer::Move(float val)
@@ -242,12 +314,13 @@ void AMyPlayer::Move(float val)
 	SpringArm->TargetOffset = FVector(400 * val * X, 400 * val * Y, 0.f);
 }
 
-
 void AMyPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	TurnCamera(DeltaTime);
 	Correct();
+	AutoAim(DeltaTime);
+	//DrawDebugBox(GetWorld(), ViewRange->GetComponentLocation(), ViewRange->GetScaledBoxExtent(), FQuat(GetActorRotation()), FColor::Turquoise, false, 0.5f, 0, 2);
 }
 
 void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -259,5 +332,17 @@ void AMyPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AMyPlayer::ActionKeys);
 	PlayerInputComponent->BindAction("Shot", IE_Pressed, this, &AMyPlayer::Shot);
+}
+
+void AMyPlayer::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	Enemy = Cast<AEnemy>(OtherActor);
+}
+
+void AMyPlayer::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (Cast<AEnemy>(OtherActor)) {
+		Enemy = nullptr;
+	}
 }
 

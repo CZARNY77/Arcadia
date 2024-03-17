@@ -32,7 +32,7 @@ ABullet::ABullet()
 	speed = 2000.f;
 }
 
-void ABullet::SetBulletParameters(FVector bulletDirection, class AMyPlayer* player)
+void ABullet::SetBulletParameters(FVector bulletDirection, class AActor* player)
 {
 	BulletMovementComponent->Velocity = bulletDirection * speed;
 	if (player) {

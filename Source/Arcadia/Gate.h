@@ -21,6 +21,8 @@ class ARCADIA_API AGate : public AActor
 	class UMaterial* CloseGateM;
 	UPROPERTY(EditAnywhere, Category = "Gate Settings")
 	class USceneComponent* Exit;
+	UPROPERTY(EditAnywhere, Category = "Gate Settings")
+	FName NextLevel;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -33,6 +35,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	class AArcadiaGameModeBase* GameMode;
+
+	void LoadNextLevel();
 
 public:
 	// Called every frame

@@ -22,7 +22,7 @@ class ARCADIA_API ABullet : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABullet();
-	void SetBulletParameters(FVector bulletDirection, class AMyPlayer* player);
+	void SetBulletParameters(FVector bulletDirection, class AActor* player);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

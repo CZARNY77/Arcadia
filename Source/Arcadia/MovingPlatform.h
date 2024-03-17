@@ -29,9 +29,11 @@ protected:
 	virtual void BeginPlay() override;
 
 	void Moving(float dt);
-
+	FVector MovementDirection;
+	bool ToStart;
+	bool ToEnd;
 	UPROPERTY(EditAnywhere, Category = "Platform Settings")
-	int speed;
+	float speed;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

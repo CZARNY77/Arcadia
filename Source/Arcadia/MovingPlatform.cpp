@@ -23,6 +23,10 @@ AMovingPlatform::AMovingPlatform()
 
 	PlatformMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlatformMesh"));
 	PlatformMesh->SetupAttachment(DummyRoot);
+
+	speed = 100.f;
+	ToStart = false;
+	ToEnd = true;
 }
 
 // Called when the game starts or when spawned
@@ -32,14 +36,21 @@ void AMovingPlatform::BeginPlay()
 
 	DrawDebugBox(GetWorld(), Start->GetComponentLocation(), Start->GetScaledBoxExtent(), FQuat(GetActorRotation()), FColor::Turquoise, true, -1, 0, 2);
 	DrawDebugBox(GetWorld(), End->GetComponentLocation(), End->GetScaledBoxExtent(), FQuat(GetActorRotation()), FColor::Turquoise, true, -1, 0, 2);
+	MovementDirection = (End->GetComponentLocation() - Start->GetComponentLocation()).GetSafeNormal();
 }
 
 void AMovingPlatform::Moving(float dt)
 {
-	FVector VDirection = (Start->GetComponentLocation() - End->GetComponentLocation()) / 2;
-	FVector MoveDelta = (VDirection * (FMath::Sin(GetWorld()->GetTimeSeconds() + dt) - FMath::Sin(GetWorld()->GetTimeSeconds())));
-
-	PlatformMesh->AddLocalOffset(MoveDelta, true);
+	FVector CurrentLocation = PlatformMesh->GetComponentLocation();
+	double EndPoint = FVector::Dist(CurrentLocation, End->GetComponentLocation());
+	double StartPoint = FVector::Dist(CurrentLocation, Start->GetComponentLocation());
+	if ((EndPoint < 141.f && ToEnd) || (StartPoint < 141.f && ToStart)) {
+		MovementDirection *= -1;
+		ToStart = !ToStart;
+		ToEnd = !ToEnd;
+	}
+	FVector AddLocation = MovementDirection * speed * dt;
+	PlatformMesh->AddLocalOffset(AddLocation);
 }
 
 // Called every frame
