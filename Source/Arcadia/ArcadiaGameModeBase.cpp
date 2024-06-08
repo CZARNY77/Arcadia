@@ -19,6 +19,8 @@ void AArcadiaGameModeBase::BeginPlay()
 	PlayerController = GetWorld()->GetFirstPlayerController();
 	AHUD* Hud = PlayerController->GetHUD();
 	MyHUD = Cast<AMyHUD>(Hud);
+
+	//if (GetWorld()->GetName() == "Menu")	DisableInput(PlayerController);
 }
 
 void AArcadiaGameModeBase::PickUpKey()

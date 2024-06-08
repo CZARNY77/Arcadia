@@ -98,58 +98,58 @@ void AMyPlayer::ChangeDirection()
 	//Assigns a location to the Yaw variable that the camera should receive, X and Y are used to change the character's movement, directionTurnCamera is responsible for the direction of camera rotation
 	//zrobić lepiej, przekazywać z rogów dane
 	//Corner --
-	if ((!Corner->AxisX) && (!Corner->AxisY) && (Y == -1)) {
+	if ((!Corner->AxisX) && (!Corner->AxisY) && (abs(Y) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw - 90.f;
-		X = -1.f;
+		X = Y;
 		Y = 0.f;
 		directionTurnCamera = -1;
 	}
-	else if ((!Corner->AxisX) && (!Corner->AxisY) && (X == -1)) {
+	else if ((!Corner->AxisX) && (!Corner->AxisY) && (abs(X) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw + 90.f;
+		Y = X;
 		X = 0.f;
-		Y = -1.f;
 		directionTurnCamera = 1;
 	}
 
 	// Corner +-
-	if ((Corner->AxisX) && (!Corner->AxisY) && (Y == 1)) {
+	if ((Corner->AxisX) && (!Corner->AxisY) && (abs(Y) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw + 90.f;
-		X = -1.f;
+		X = Y;
 		Y = 0.f;
 		directionTurnCamera = 1;
 	}
-	else if ((Corner->AxisX) && (!Corner->AxisY) && (X == -1)) {
+	else if ((Corner->AxisX) && (!Corner->AxisY) && (abs(X) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw - 90.f;
+		Y = X;
 		X = 0.f;
-		Y = 1.f;
 		directionTurnCamera = -1;
 	}
 
 	// Corner ++
-	if ((Corner->AxisX) && (Corner->AxisY) && (Y == 1)) {
+	if ((Corner->AxisX) && (Corner->AxisY) && (abs(Y) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw - 90.f;
-		X = 1.f;
+		X = Y;
 		Y = 0.f;
 		directionTurnCamera = -1;
 	}
-	else if ((Corner->AxisX) && (Corner->AxisY) && (X == 1)) {
+	else if ((Corner->AxisX) && (Corner->AxisY) && (abs(X) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw + 90.f;
+		Y = X;
 		X = 0.f;
-		Y = 1.f;
 		directionTurnCamera = 1;
 	}
 
 	// Corner -+
-	if ((!Corner->AxisX) && (Corner->AxisY) && (Y == -1)) {
+	if ((!Corner->AxisX) && (Corner->AxisY) && (abs(Y) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw + 90.f;
-		X = 1.f;
+		X = Y;
 		Y = 0.f;
 		directionTurnCamera = 1;
 	}
-	else if ((!Corner->AxisX) && (Corner->AxisY) && (X == 1)) {
+	else if ((!Corner->AxisX) && (Corner->AxisY) && (abs(X) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw - 90.f;
+		Y = X;
 		X = 0.f;
-		Y = -1.f;
 		directionTurnCamera = -1;
 	}
 	bTurnCamera = true;
@@ -276,7 +276,7 @@ void AMyPlayer::TurnCamera(float dt)
 void AMyPlayer::SwitchCanShot()
 {
 	bCanShot = !bCanShot;
-	EnableInput(PlayerController);
+	if(GetWorld()->GetName() != "Menu")	EnableInput(PlayerController);
 }
 
 void AMyPlayer::Correct()
