@@ -16,7 +16,7 @@ class ARCADIA_API AMyHUD : public AHUD
 	
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Custom Category")
-	void GetDmg();
+	void GetDmg(int dmg);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Custom Category")
 	void PickUpKey();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Custom Category")

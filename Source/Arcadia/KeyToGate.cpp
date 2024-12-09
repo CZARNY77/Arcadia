@@ -4,6 +4,7 @@
 #include "KeyToGate.h"
 #include "Components/SphereComponent.h"
 #include "ArcadiaGameModeBase.h"
+#include "Misc/OutputDeviceNull.h"
 
 // Sets default values
 AKeyToGate::AKeyToGate()
@@ -39,8 +40,12 @@ void AKeyToGate::Tick(float DeltaTime)
 void AKeyToGate::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (Cast<AMyPlayer>(OtherActor)) {
-		GameMode->PickUpKey();
-		Destroy();
+		if (NPC) {
+			FOutputDeviceNull ar;
+			NPC->CallFunctionByNameWithArguments(TEXT("Get Materials"), ar, NULL, true);
+		}
+		//GameMode->PickUpKey();
+		//Destroy();
 	}
 }
 

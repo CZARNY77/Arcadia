@@ -19,6 +19,8 @@ void AArcadiaGameModeBase::BeginPlay()
 	PlayerController = GetWorld()->GetFirstPlayerController();
 	AHUD* Hud = PlayerController->GetHUD();
 	MyHUD = Cast<AMyHUD>(Hud);
+	LevelName = GetWorld()->GetName();
+	ownedKeys = 0;
 
 	//if (GetWorld()->GetName() == "Menu")	DisableInput(PlayerController);
 }
@@ -32,7 +34,7 @@ void AArcadiaGameModeBase::PickUpKey()
 		if (gate) gate->OpenGate();
 	}
 
-	if (MyFairy)	MyFairy->AddSystemLog("Gracz zdoby³ klucz. Brama siê otworzy³a.");
+	//if (MyFairy)	MyFairy->AddSystemLog("Gracz zdoby³ klucz. Brama siê otworzy³a.");
 }
 
 FText AArcadiaGameModeBase::TextPoints()

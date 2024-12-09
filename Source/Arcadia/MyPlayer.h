@@ -7,13 +7,6 @@
 #include "GameFramework/Character.h"
 #include "MyPlayer.generated.h"
 
-//enum potrzebne do zmieniania kierunku chodzenia
-enum TurnCamera {
-	left,
-	right,
-	enter
-};
-
 UCLASS()
 class ARCADIA_API AMyPlayer : public ACharacter
 {
@@ -58,7 +51,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	//Zmienne okreœlaj¹ce kierunek gracza
-	TurnCamera turnCamera;
 	float X, Y, Yaw;
 	int directionTurnCamera;	// okreœla kierynek obrotu kamery
 	int hp;

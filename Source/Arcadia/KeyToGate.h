@@ -15,10 +15,12 @@ class ARCADIA_API AKeyToGate : public AActor
 	class UStaticMeshComponent* KeyMesh;
 	UPROPERTY(EditAnywhere, Category = "Key Settings")
 	class USphereComponent* SphereCollider;
-
 public:	
 	// Sets default values for this actor's properties
 	AKeyToGate();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC")
+	class APawn* NPC;
 
 protected:
 	// Called when the game starts or when spawned

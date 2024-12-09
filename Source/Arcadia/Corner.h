@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Corner.generated.h"
 
+
 UCLASS()
 class ARCADIA_API ACorner : public AActor
 {
@@ -19,6 +20,7 @@ class ARCADIA_API ACorner : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ACorner();
+
 	UPROPERTY(EditAnywhere, Category = "Corner Settings")
 	bool AxisX;
 	UPROPERTY(EditAnywhere, Category = "Corner Settings")

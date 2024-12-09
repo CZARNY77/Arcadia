@@ -64,6 +64,7 @@ void AGate::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 {
 	if (AMyPlayer* player = Cast<AMyPlayer>(OtherActor)) {
 		if (GameMode->openGate) {
+			AddLevel();
 			GameMode->MyHUD->OnCurtain();
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("You Win"));
 			player->AutoNav(Exit->GetComponentLocation());

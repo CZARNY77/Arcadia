@@ -24,7 +24,9 @@ public:
 	class APlayerController* PlayerController;
 	class AMyHUD* MyHUD;
 	class AFairy* MyFairy;
+	FString LevelName;
 
+	UFUNCTION(BlueprintCallable)
 	void PickUpKey();
 	UFUNCTION(BlueprintCallable)
 	FText TextPoints();

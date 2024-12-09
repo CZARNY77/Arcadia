@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ArcadiaGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMyPlayer::AMyPlayer()
@@ -61,11 +62,11 @@ void AMyPlayer::GetDmg(int dmg)
 {
 
 	hp -= dmg;
-	if (MyGameMode->MyHUD)	MyGameMode->MyHUD->GetDmg();;
+	if (MyGameMode->MyHUD)	MyGameMode->MyHUD->GetDmg(dmg);;
 	if (hp <= 0) {
+		DisableInput(PlayerController);
 		if (DeathMontage) {
 			PlayAnimMontage(DeathMontage);
-			DisableInput(PlayerController);
 			return;
 		}
 	}
@@ -74,7 +75,8 @@ void AMyPlayer::GetDmg(int dmg)
 
 void AMyPlayer::Death()
 {
-	//Destroy();
+	FName LevelName = FName(*GetWorld()->GetAuthGameMode<AArcadiaGameModeBase>()->LevelName);
+	UGameplayStatics::OpenLevel(this, LevelName);
 }
 
 void AMyPlayer::BeginPlay()
@@ -96,8 +98,8 @@ void AMyPlayer::ChangeDirection()
 {
 	//Do Yaw przpisuje lokalizacjê jaka ma otrzymac kamera, X i Y sa użyte do zmiany ruchu postaci, directionTurnCamera odpowiada w którym kierunku ma obróci sie kamera.
 	//Assigns a location to the Yaw variable that the camera should receive, X and Y are used to change the character's movement, directionTurnCamera is responsible for the direction of camera rotation
-	//zrobić lepiej, przekazywać z rogów dane
-	//Corner --
+
+	// Corner --
 	if ((!Corner->AxisX) && (!Corner->AxisY) && (abs(Y) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw - 90.f;
 		X = Y;
@@ -114,13 +116,14 @@ void AMyPlayer::ChangeDirection()
 	// Corner +-
 	if ((Corner->AxisX) && (!Corner->AxisY) && (abs(Y) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw + 90.f;
-		X = Y;
+		X = -Y;
 		Y = 0.f;
 		directionTurnCamera = 1;
+		bResetRotation = true;
 	}
 	else if ((Corner->AxisX) && (!Corner->AxisY) && (abs(X) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw - 90.f;
-		Y = X;
+		Y = -X;
 		X = 0.f;
 		directionTurnCamera = -1;
 	}
@@ -142,13 +145,13 @@ void AMyPlayer::ChangeDirection()
 	// Corner -+
 	if ((!Corner->AxisX) && (Corner->AxisY) && (abs(Y) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw + 90.f;
-		X = Y;
+		X = -Y;
 		Y = 0.f;
 		directionTurnCamera = 1;
 	}
 	else if ((!Corner->AxisX) && (Corner->AxisY) && (abs(X) == 1)) {
 		Yaw = SpringArm->GetComponentRotation().Yaw - 90.f;
-		Y = X;
+		Y = -X;
 		X = 0.f;
 		directionTurnCamera = -1;
 	}
@@ -266,8 +269,9 @@ void AMyPlayer::TurnCamera(float dt)
 			SpringArm->AddLocalRotation(FQuat(newRotation), false, 0, ETeleportType::None);
 		}
 		else {
+			FRotator newRotation = FRotator(0.f, Yaw, 0.f);
+			SpringArm->SetRelativeRotation(FQuat(newRotation), false, 0, ETeleportType::None);
 			bTurnCamera = false;
-			bResetRotation = true;
 		}
 			
 	}

@@ -36,11 +36,20 @@
 		},
 		{
 			"Name": "OpenAIAPI",
-			"Enabled": true
+			"Enabled": false
 		},
 		{
 			"Name": "TextToSpeech",
 			"Enabled": true
+		},
+		{
+			"Name": "ConvaiReadyPlayerMe",
+			"Enabled": true
+		},
+		{
+			"Name": "glTFRuntime",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/d2ed3709933d4608a3a8dd746cbc045d"
 		}
 	]
 }
