@@ -4,6 +4,9 @@
 #include "Corner.h"
 #include "MyPlayer.h"
 #include "Components/BoxComponent.h"
+#include "ArcadiaGameModeBase.h"
+#include "MyHUD.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ACorner::ACorner()
@@ -30,6 +33,7 @@ void ACorner::BeginPlay()
 
 	MeshBox->OnComponentEndOverlap.AddDynamic(this, &ACorner::OnOverlapEnd);
 	DrawDebugBox(GetWorld(), GetActorLocation(), MeshBox->GetScaledBoxExtent(), FQuat(GetActorRotation()), FColor::Turquoise, true, -1, 0, 2);
+	MyGameMode = Cast<AArcadiaGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
 // Called every frame
@@ -43,6 +47,7 @@ void ACorner::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 {
 	if (AMyPlayer* player = Cast<AMyPlayer>(OtherActor)) {
 		player->Corner = this;
+		if (MyGameMode->MyHUD)	MyGameMode->MyHUD->DisplayActionButton();
 	}
 }
 
@@ -50,6 +55,7 @@ void ACorner::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 {
 	if (AMyPlayer* player = Cast<AMyPlayer>(OtherActor)) {
 		player->Corner = nullptr;
+		if (MyGameMode->MyHUD)	MyGameMode->MyHUD->HideActionButton();
 	}
 }
 

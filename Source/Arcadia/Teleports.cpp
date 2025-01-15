@@ -4,6 +4,8 @@
 #include "Teleports.h"
 #include "MyPlayer.h"
 #include "Components/BoxComponent.h"
+#include "ArcadiaGameModeBase.h"
+#include "MyHUD.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -47,6 +49,8 @@ void ATeleports::BeginPlay()
 
 	DrawDebugBox(GetWorld(), BoxCollider_1->GetComponentLocation(), BoxCollider_1->GetScaledBoxExtent(), FQuat(GetActorRotation()), FColor::Turquoise, true, -1, 0, 2);
 	DrawDebugBox(GetWorld(), BoxCollider_2->GetComponentLocation(), BoxCollider_2->GetScaledBoxExtent(), FQuat(GetActorRotation()), FColor::Turquoise, true, -1, 0, 2);
+
+	MyGameMode = Cast<AArcadiaGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
 // Called every frame
@@ -91,6 +95,7 @@ void ATeleports::OnOverlapBox(UPrimitiveComponent* OverlappedComp, AActor* Other
 			player->Teleport = this;
 
 		teleportNumber = *OverlappedComp->GetName() == BoxCollider_1->GetName() ? 1 : 2;
+		if (MyGameMode->MyHUD)	MyGameMode->MyHUD->DisplayActionButton();
 	}
 }
 
@@ -98,6 +103,7 @@ void ATeleports::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
 	if (Cast<AMyPlayer>(OtherActor) && player) {
 		player->Teleport = nullptr;
+		if (MyGameMode->MyHUD)	MyGameMode->MyHUD->HideActionButton();
 	}
 }
 

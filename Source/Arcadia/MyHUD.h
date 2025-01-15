@@ -23,4 +23,8 @@ public:
 	void OnCurtain();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Custom Category")
 	void ExitCurtain();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Custom Category")
+	void DisplayActionButton();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Custom Category")
+	void HideActionButton();
 };

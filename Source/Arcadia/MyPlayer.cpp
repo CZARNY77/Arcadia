@@ -62,7 +62,7 @@ void AMyPlayer::GetDmg(int dmg)
 {
 
 	hp -= dmg;
-	if (MyGameMode->MyHUD)	MyGameMode->MyHUD->GetDmg(dmg);;
+	if (MyGameMode->MyHUD)	MyGameMode->MyHUD->GetDmg(dmg);
 	if (hp <= 0) {
 		DisableInput(PlayerController);
 		if (DeathMontage) {

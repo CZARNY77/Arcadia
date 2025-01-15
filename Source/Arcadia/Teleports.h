@@ -38,6 +38,7 @@ protected:
 
 	class AMyPlayer* player;
 	int teleportNumber;
+	class AArcadiaGameModeBase* MyGameMode;
 
 	void TeleportPlayer();
 public:	
